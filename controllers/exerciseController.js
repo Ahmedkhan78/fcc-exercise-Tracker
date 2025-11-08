@@ -38,27 +38,32 @@ exports.getLogs = async (req, res) => {
     const user = await User.findById(userId);
     if (!user) return res.status(404).json({ error: "User not found" });
 
-    let query = { userId };
+    // Build query
+    const query = { userId };
     if (from || to) query.date = {};
     if (from) query.date.$gte = new Date(from);
     if (to) query.date.$lte = new Date(to);
 
-    let exercises = Exercise.find(query);
+    let exercises = Exercise.find(query).select("description duration date");
     if (limit) exercises = exercises.limit(Number(limit));
 
     const results = await exercises.exec();
 
+    // ✅ Force every field into correct type (FCC strict check)
+    const log = results.map((e) => ({
+      description: String(e.description),
+      duration: Number(e.duration),
+      date: new Date(e.date).toDateString(),
+    }));
+
     res.json({
-      _id: user._id,
-      username: user.username,
-      count: results.length,
-      log: results.map((e) => ({
-        description: e.description,
-        duration: e.duration,
-        date: new Date(e.date).toDateString(),
-      })),
+      _id: user._id.toString(),
+      username: String(user.username),
+      count: log.length,
+      log,
     });
   } catch (err) {
+    console.error(err);
     res.status(500).json({ error: err.message });
   }
 };
