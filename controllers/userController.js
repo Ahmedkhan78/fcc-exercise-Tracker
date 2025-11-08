@@ -1,10 +1,19 @@
 const User = require("../models/User");
 
+const User = require("../models/User");
+
 exports.createUser = async (req, res) => {
   try {
-    const newUser = new User({ username: req.body.username });
+    const username = req.body.username;
+    if (!username) return res.status(400).json({ error: "Username required" });
+
+    const newUser = new User({ username });
     const savedUser = await newUser.save();
-    res.json(savedUser);
+
+    res.json({
+      username: savedUser.username,
+      _id: savedUser._id,
+    });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

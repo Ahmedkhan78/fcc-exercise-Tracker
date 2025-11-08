@@ -1,10 +1,19 @@
 const User = require("../models/User");
 const Exercise = require("../models/Exercise");
 
+const User = require("../models/User");
+const Exercise = require("../models/Exercise");
+
 exports.addExercise = async (req, res) => {
   try {
     const { description, duration, date } = req.body;
     const userId = req.params.id;
+
+    if (!description || !duration) {
+      return res
+        .status(400)
+        .json({ error: "Description and duration required" });
+    }
 
     const exercise = new Exercise({
       userId,
