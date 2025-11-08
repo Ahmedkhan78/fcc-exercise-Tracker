@@ -55,7 +55,7 @@ exports.getLogs = async (req, res) => {
       log: results.map((e) => ({
         description: e.description,
         duration: e.duration,
-        date: e.date.toDateString(),
+        date: new Date(e.date).toDateString(),
       })),
     });
   } catch (err) {
