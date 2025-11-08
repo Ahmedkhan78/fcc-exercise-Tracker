@@ -12,7 +12,7 @@ exports.addExercise = async (req, res) => {
     const exercise = new Exercise({
       userId,
       description,
-      duration: parseInt(duration),
+      duration: Number(duration),
       date: date ? new Date(date) : new Date(),
     });
 
@@ -43,18 +43,16 @@ exports.getLogs = async (req, res) => {
     if (from) query.date.$gte = new Date(from);
     if (to) query.date.$lte = new Date(to);
 
-    let exercisesQuery = Exercise.find(query).select(
-      "description duration date -_id"
-    );
-    if (limit) exercisesQuery = exercisesQuery.limit(parseInt(limit));
+    let exercises = Exercise.find(query);
+    if (limit) exercises = exercises.limit(Number(limit));
 
-    const exercises = await exercisesQuery.exec();
+    const results = await exercises.exec();
 
     res.json({
       _id: user._id,
       username: user.username,
-      count: exercises.length,
-      log: exercises.map((e) => ({
+      count: results.length,
+      log: results.map((e) => ({
         description: e.description,
         duration: e.duration,
         date: e.date.toDateString(),
