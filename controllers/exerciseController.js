@@ -35,35 +35,37 @@ exports.getLogs = async (req, res) => {
     const { from, to, limit } = req.query;
     const userId = req.params.id;
 
-    const user = await User.findById(userId);
+    const user = await User.findById(userId).lean();
     if (!user) return res.status(404).json({ error: "User not found" });
 
-    // Build query
     const query = { userId };
     if (from || to) query.date = {};
     if (from) query.date.$gte = new Date(from);
     if (to) query.date.$lte = new Date(to);
 
-    let exercises = Exercise.find(query).select("description duration date");
+    let exercises = Exercise.find(query).lean(); // << make sure to use lean()
     if (limit) exercises = exercises.limit(Number(limit));
 
     const results = await exercises.exec();
 
-    // ✅ Force every field into correct type (FCC strict check)
-    const log = results.map((e) => ({
-      description: String(e.description),
-      duration: Number(e.duration),
-      date: new Date(e.date).toDateString(),
-    }));
+    const log = results.map((e) => {
+      const d = new Date(e.date);
+      const dateStr = isNaN(d.getTime()) ? "" : d.toDateString();
+      return {
+        description: String(e.description),
+        duration: Number(e.duration),
+        date: dateStr,
+      };
+    });
 
     res.json({
-      _id: user._id.toString(),
+      _id: String(user._id),
       username: String(user.username),
       count: log.length,
       log,
     });
   } catch (err) {
-    console.error(err);
+    console.error("getLogs error:", err);
     res.status(500).json({ error: err.message });
   }
 };
