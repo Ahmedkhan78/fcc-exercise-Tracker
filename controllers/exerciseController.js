@@ -1,19 +1,13 @@
 const User = require("../models/User");
 const Exercise = require("../models/Exercise");
 
-const User = require("../models/User");
-const Exercise = require("../models/Exercise");
-
 exports.addExercise = async (req, res) => {
   try {
     const { description, duration, date } = req.body;
     const userId = req.params.id;
 
-    if (!description || !duration) {
-      return res
-        .status(400)
-        .json({ error: "Description and duration required" });
-    }
+    const user = await User.findById(userId);
+    if (!user) return res.status(404).json({ error: "User not found" });
 
     const exercise = new Exercise({
       userId,
@@ -23,7 +17,6 @@ exports.addExercise = async (req, res) => {
     });
 
     const savedExercise = await exercise.save();
-    const user = await User.findById(userId);
 
     res.json({
       _id: user._id,

@@ -1,7 +1,5 @@
 const User = require("../models/User");
 
-const User = require("../models/User");
-
 exports.createUser = async (req, res) => {
   try {
     const username = req.body.username;
